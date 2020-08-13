@@ -70,20 +70,10 @@ public class ClientSessionManager
 			.subscribe(this::setUuid);
 	}
 
-	@Schedule(period = 10, unit = ChronoUnit.MINUTES, asynchronous = true)
+	@Schedule(period = 1000, unit = ChronoUnit.MINUTES, asynchronous = true)
 	public void ping()
 	{
-		if (sessionId == null)
-		{
-			start();
-			return;
-		}
 
-		sessionClient.pingSession(sessionId)
-			.subscribeOn(Schedulers.io())
-			.observeOn(Schedulers.single())
-			.doOnError(this::error)
-			.subscribe();
 	}
 
 	private Future<Void> shutdown()
