@@ -1330,4 +1330,22 @@ public interface RSClient extends RSGameShell, Client
 
 	@Import("pcmSampleLength")
 	void setPcmSampleLength(int var0);
+
+	@Import("clientPacketMouseClick")
+	RSClientPacket getClientPacketMouseClick();
+
+	@Import("getPacketBufferNode")
+	RSPacketBufferNode getPacketBufferNode(RSClientPacket clientPacket, RSIsaacCipher cipher);
+
+	@Import("packetWriter")
+	RSPacketWriter getPacketWriter();
+
+	@Import("currentTimeMillis")
+	long currentTimeMillis();
+
+	@Import("dragItemSlotDestination")
+	int getDragItemSlotDestination();
+
+	@Import("MouseHandler_lastPressedTimeMillisVolatile")
+	void setMouseLastPressed(long time);
 }

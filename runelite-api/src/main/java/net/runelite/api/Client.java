@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import net.runelite.api.annotations.VisibleForExternalPlugins;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
@@ -2046,7 +2048,7 @@ public interface Client extends GameShell
 	 * Sets the status of client mirror
 	 */
 	void setMirrored(boolean isMirrored);
-	
+
 	/**
 	 * Sets the image to be used for the login screen, provided as SpritePixels
 	 * If the image is larger than half the width of fixed mode,
@@ -2079,4 +2081,20 @@ public interface Client extends GameShell
 	String getSelectedItemName();
 
 	Widget getMessageContinueWidget();
+
+	void setPrintPackets(boolean printPackets);
+	boolean isPrintPackets();
+
+	void invokeMenuAction(String option, String target, int identifier, int opcode, int param0, int param1, int canvasX, int canvasY);
+
+	void invokeMouseClick(int xPos, int yPos, MouseButton button);
+	void invokeMouseClick(int xPos, int yPos, MouseButton button, long delay);
+
+	@RequiredArgsConstructor
+	enum MouseButton
+	{
+		LEFT(1), RIGHT(2);
+		@Getter
+		private final int value;
+	}
 }

@@ -341,6 +341,7 @@ public class ClientPacket implements class190 {
 	@ObfuscatedSignature(
 		descriptor = "Lgf;"
 	)
+	@Export("clientPacketMouseClick")
 	public static final ClientPacket field2312;
 	@ObfuscatedName("bd")
 	@ObfuscatedSignature(

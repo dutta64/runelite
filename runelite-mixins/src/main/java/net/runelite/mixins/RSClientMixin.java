@@ -54,7 +54,14 @@ import net.runelite.api.InventoryID;
 import net.runelite.api.ItemDefinition;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.MenuOpcode;
-import static net.runelite.api.MenuOpcode.*;
+import static net.runelite.api.MenuOpcode.PLAYER_EIGTH_OPTION;
+import static net.runelite.api.MenuOpcode.PLAYER_FIFTH_OPTION;
+import static net.runelite.api.MenuOpcode.PLAYER_FIRST_OPTION;
+import static net.runelite.api.MenuOpcode.PLAYER_FOURTH_OPTION;
+import static net.runelite.api.MenuOpcode.PLAYER_SECOND_OPTION;
+import static net.runelite.api.MenuOpcode.PLAYER_SEVENTH_OPTION;
+import static net.runelite.api.MenuOpcode.PLAYER_SIXTH_OPTION;
+import static net.runelite.api.MenuOpcode.PLAYER_THIRD_OPTION;
 import net.runelite.api.MessageNode;
 import net.runelite.api.NPC;
 import net.runelite.api.NPCDefinition;
@@ -126,6 +133,8 @@ import net.runelite.rs.api.RSNode;
 import net.runelite.rs.api.RSNodeDeque;
 import net.runelite.rs.api.RSNodeHashTable;
 import net.runelite.rs.api.RSPacketBuffer;
+import net.runelite.rs.api.RSPacketBufferNode;
+import net.runelite.rs.api.RSPacketWriter;
 import net.runelite.rs.api.RSPlayer;
 import net.runelite.rs.api.RSScene;
 import net.runelite.rs.api.RSSprite;
@@ -1388,6 +1397,14 @@ public abstract class RSClientMixin implements RSClient
 			);
 		}
 
+		if (printPackets)
+		{
+			client.getLogger().info(
+				"{} opt={} targ={} id={} opcode={} param0={} param1={} canvasX={} canvasY={} authentic={}",
+				"MenuAction", option, target, id, opcode, param0, param1, canvasX, canvasY, authentic
+			);
+		}
+
 		/* Along the way, the RuneScape client may change a menuAction by incrementing it with 2000.
 		 * I have no idea why, but it does. Their code contains the same conditional statement.
 		 */
@@ -1947,6 +1964,86 @@ public abstract class RSClientMixin implements RSClient
 		client.setMusicTrackVolume(var4);
 		client.setMusicTrackBoolean(var5);
 		client.setPcmSampleLength(var0);
+	}
+
+	@Inject
+	private static boolean printPackets;
+
+	@Inject
+	@Override
+	public boolean isPrintPackets()
+	{
+		return printPackets;
+	}
+
+	@Inject
+	@Override
+	public void setPrintPackets(final boolean yes)
+	{
+		printPackets = yes;
+	}
+
+	@Inject
+	@Override
+	public void invokeMenuAction(final String option, final String target, final int identifier, final int opcode, final int param0, final int param1, final int canvasX, final int canvasY)
+	{
+		assert isClientThread();
+
+		client.sendMenuAction(param0, param1, opcode, identifier, option, target, canvasX, canvasY);
+	}
+
+	@Inject
+	@Override
+	public void invokeMouseClick(final int xPos, final int yPos, final MouseButton button)
+	{
+		assert isClientThread();
+
+		final long lastPressedMillis = currentTimeMillis();
+		final long delay = lastPressedMillis - getClientMouseLastPressedMillis();
+
+		setClientMouseLastPressedMillis(lastPressedMillis);
+		setMouseLastPressed(lastPressedMillis);
+
+		invokeMouseClick(xPos, yPos, button, delay);
+	}
+
+	@Inject
+	@Override
+	public void invokeMouseClick(int xPos, int yPos, final MouseButton button, long delay)
+	{
+		assert isClientThread();
+
+		if (xPos < 0)
+		{
+			xPos = 0;
+		}
+		else if (xPos > getCanvasWidth())
+		{
+			xPos = getCanvasWidth();
+		}
+
+		if (yPos < 0)
+		{
+			yPos = 0;
+		}
+		else if (yPos > getCanvasHeight())
+		{
+			yPos = getCanvasHeight();
+		}
+
+		if (delay > 32767L)
+		{
+			delay = 32767L;
+		}
+
+		final RSPacketWriter packetWriter = getPacketWriter();
+		final RSPacketBufferNode node = getPacketBufferNode(getClientPacketMouseClick(), packetWriter.getIsaacCipher());
+		final RSPacketBuffer buffer = node.getPacketBuffer();
+
+		buffer.writeShort((button.getValue() == 2 ? 1 : 0) + (((int) delay) << 1));
+		buffer.writeShort(xPos);
+		buffer.writeShort(yPos);
+		packetWriter.addNode(node);
 	}
 }
 

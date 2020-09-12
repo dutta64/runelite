@@ -1,3 +1,9 @@
 package net.runelite.rs.api;
 
-public interface RSClientPacket {}
+import net.runelite.mapping.Import;
+
+public interface RSClientPacket
+{
+	@Import("id")
+	int getId();
+}
